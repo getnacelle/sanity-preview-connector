@@ -1,0 +1,59 @@
+{
+  "name": "@nacelle/sanity-preview-connector",
+  "version": "0.0.1",
+  "description": "Preview unpublished Sanity content with the Nacelle Client JS SDK",
+  "license": "ISC",
+  "author": "Nacelle Inc. (getnacelle.com)",
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "peerDependencies": {},
+  "main": "dist/index.js",
+  "module": "dist/sanity-preview-connector.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "bugs": {
+    "url": "https://github.com/getnacelle/sanity-preview-connector/issues"
+  },
+  "homepage": "https://github.com/getnacelle/sanity-preview-connector#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "size-limit": [
+    {
+      "path": "dist/sanity-preview-connector.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/sanity-preview-connector.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^4.9.1",
+    "husky": "^4.3.8",
+    "size-limit": "^4.9.1",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.3"
+  }
+}
