@@ -9,8 +9,8 @@ import {
   FetchBlogParams,
   NacelleContent
 } from '@nacelle/client-js-sdk'
-import sanityClient from '@sanity/client'
-import EntriesQuery from '../interfaces/EntriesQuery'
+import sanityClient, { ClientConfig } from '@sanity/client'
+// import EntriesQuery from '../interfaces/EntriesQuery' // NOTE: maybe use { SanityDocument } from '@sanity/client', above
 import Entry from '../interfaces/Entry'
 import mapSanityEntry from '../utils/mapSanityEntry'
 
@@ -19,6 +19,7 @@ export interface NacelleSanityPreviewConnectorParams
   sanityProjectID: string
   sanityDataset: string
   sanityToken?: string
+  sanityConfig: ClientConfig
   client?: object
   entryMapper?: (entry: Entry) => NacelleContent
 }
@@ -28,6 +29,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   sanityDataset: string
   sanityToken: string
   sanityClient: any
+  sanityConfig: ClientConfig
   entryMapper: (entry: Entry) => NacelleContent
 
   constructor(params: NacelleSanityPreviewConnectorParams) {
@@ -35,14 +37,8 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     this.sanityProjectID = params.sanityProjectID
     this.sanityDataset = params.sanityDataset
     this.sanityToken = params.sanityToken || ''
-    this.sanityClient =
-      params.client ||
-      sanityClient({
-        projectId: this.sanityProjectID,
-        dataset: this.sanityDataset,
-        useCdn: false,
-        withCredentials: Boolean(this.sanityToken)
-      })
+    this.sanityConfig = params.sanityConfig
+    this.sanityClient = params.client || sanityClient(this.sanityConfig)
     this.entryMapper = params.entryMapper || mapSanityEntry
   }
 
