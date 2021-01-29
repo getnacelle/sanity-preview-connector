@@ -86,9 +86,9 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     //   locale: this.sanityPreviewLocales[0],
     //   include: this.sanityIncludeDepth
     // })
-    const response = await this.sanityClient.getDocument(query)
-    if (response && response.items.length > 0) {
-      return this.entryMapper(response.items[0])
+    const response = await this.sanityClient.fetch(query)
+    if (response && response.result.length > 0) {
+      return this.entryMapper(response.result[0])
     }
 
     return []
