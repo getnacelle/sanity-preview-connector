@@ -2,7 +2,7 @@ import {
   NacelleStaticConnector,
   NacelleStaticConnectorParams,
   FetchContentParams,
-  // FetchPageParams,
+  FetchPageParams,
   // FetchPagesParams,
   // FetchArticleParams,
   // FetchArticlesParams,
@@ -15,27 +15,21 @@ import Entry from '../interfaces/Entry'
 import mapSanityEntry from '../utils/mapSanityEntry'
 
 export interface NacelleSanityPreviewConnectorParams
-  extends NacelleStaticConnectorParams {
-  // projectId: string
-  // dataset: string
-  sanityToken?: string
-  sanityConfig: ClientConfig
+extends NacelleStaticConnectorParams {
   client?: object
+  sanityConfig: ClientConfig
+  sanityToken?: string
   entryMapper?: (entry: Entry) => NacelleContent
 }
 
 export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
-  // projectId: string
-  // dataset: string
-  sanityToken: string
   sanityClient: any
   sanityConfig: ClientConfig
+  sanityToken: string
   entryMapper: (entry: Entry) => NacelleContent
 
   constructor(params: NacelleSanityPreviewConnectorParams) {
     super(params)
-    // this.projectId = params.projectId
-    // this.dataset = params.dataset
     this.sanityToken = params.sanityToken || ''
     this.sanityConfig = params.sanityConfig
     this.sanityClient = params.client || sanityClient(this.sanityConfig)
@@ -55,24 +49,21 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     if (type === 'article') {
       queryTerms.blogHandle = blogHandle
     }
+
+    // see GROQ docs -> https://www.sanity.io/docs/overview-groq
     const groqFilter = Object.keys(queryTerms).reduce((acc: string, key: string) => {
       const value = queryTerms[key]
       const filter = `${key} == "${value}"`
       return acc.length ? `${acc} && ${filter}` : `${filter}`
     }, '')
-    const query = `*[${groqFilter}]`
 
-    // DEBUG ONLY -- REMOVE
-    // const query = `*`
-    // const query = `*[_type == "${type}" && handle.current == "${handle}"]
-    // {
-    //   ...,
-    //   "sections" => [_id == _ref]
-    // }`
+    // Resolve references to section children (_ref -> _id)
+    const groqProjection = `{..., sections[]->{...}}`
+    const query = `*[${groqFilter}]${groqProjection}`
 
-    const response = await this.sanityClient.fetch(query)
-    if (response && response.result.length > 0) {
-      return this.entryMapper(response.result[0])
+    const result = await this.sanityClient.fetch(query)
+    if (result && result.length > 0) {
+      return this.entryMapper(result[0])
     }
     throw new Error(
       `Unable to find Sanity preview content with type ${type}, handle ${handle}`
@@ -86,21 +77,21 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     //   locale: this.sanityPreviewLocales[0],
     //   include: this.sanityIncludeDepth
     // })
-    const response = await this.sanityClient.fetch(query)
-    if (response && response.result.length > 0) {
-      return this.entryMapper(response.result[0])
+    const result = await this.sanityClient.fetch(query)
+    if (result && result.length > 0) {
+      return this.entryMapper(result[0])
     }
 
     return []
   }
 
-  // page({ handle, locale }: FetchPageParams): Promise<NacelleContent> {
-  //   // return this.content({
-  //   //   handle,
-  //   //   locale,
-  //   //   type: 'page'
-  //   // })
-  // }
+  page({ handle, locale }: FetchPageParams): Promise<NacelleContent> {
+    return this.content({
+      handle,
+      locale,
+      type: 'page'
+    })
+  }
 
   // async pages({
   //   handles,

@@ -1,20 +1,24 @@
 import {
   NacelleContent,
   CreateContentOptions,
-  createMedia,
+  // createMedia,
   createItemList,
   createContent
 } from '@nacelle/client-js-sdk'
 import Entry from '../interfaces/Entry'
-import mapRelatedArticle from './mapRelatedArticle'
+// import mapRelatedArticle from './mapRelatedArticle'
 
 export default (entry: Entry): NacelleContent => {
   const content = {
     cmsSyncSource: 'sanity',
     source: 'sanity'
   } as CreateContentOptions
-  const fields = entry.fields
   const {
+    _id,
+    _createdAt,
+    _updatedAt,
+    _type,
+    locale,
     title,
     handle,
     description,
@@ -31,25 +35,25 @@ export default (entry: Entry): NacelleContent => {
     collectionHandle,
     relatedArticles,
     ...otherFields
-  } = fields
+  } = entry
 
-  if (entry.sys.locale) {
-    content.locale = entry.sys.locale
+  if (locale) {
+    content.locale = locale
   }
 
-  if (entry.sys.id) {
-    content.cmsSyncSourceContentId = entry.sys.id
+  if (_id) {
+    content.cmsSyncSourceContentId = _id
   }
 
-  if (entry.sys.createdAt) {
+  if (_createdAt) {
     content.createdAt = Math.floor(
-      new Date(entry.sys.createdAt).getTime() / 1000
+      new Date(_createdAt).getTime() / 1000
     )
   }
 
-  if (entry.sys.updatedAt) {
+  if (_updatedAt) {
     content.updatedAt = Math.floor(
-      new Date(entry.sys.updatedAt).getTime() / 1000
+      new Date(_updatedAt).getTime() / 1000
     )
   }
 
@@ -57,11 +61,7 @@ export default (entry: Entry): NacelleContent => {
     content.publishDate = Math.floor(new Date(publishDate).getTime() / 1000)
   }
 
-  if (entry.sys.contentType.sys.id) {
-    content.type = entry.sys.contentType.sys.id
-  } else {
-    content.type = 'content'
-  }
+  content.type = _type || 'content'
 
   if (title) {
     content.title = title
@@ -87,29 +87,30 @@ export default (entry: Entry): NacelleContent => {
     content.tags = tags
   }
 
-  if (author && author.fields) {
+  if (author) {
     content.author = {
-      firstName: author.fields.firstName || '',
-      lastName: author.fields.lastName || '',
-      bio: author.fields.bio || '',
-      email: author.fields.email || ''
+      firstName: author.firstName || '',
+      lastName: author.lastName || '',
+      bio: author.bio || '',
+      email: author.email || ''
     }
   }
 
-  if (
-    featuredMedia &&
-    featuredMedia.fields &&
-    featuredMedia.fields.file &&
-    featuredMedia.sys
-  ) {
-    content.featuredMedia = createMedia({
-      id: featuredMedia.sys.id,
-      type: featuredMedia.fields.file.contentType,
-      src: featuredMedia.fields.file.url,
-      thumbnailSrc: featuredMedia.fields.file.url,
-      altText: featuredMedia.fields.title
-    })
-  }
+  // TODO: resolve image
+  // if (
+  //   featuredMedia &&
+  //   featuredMedia &&
+  //   featuredMedia.fields.file &&
+  //   featuredMedia.sys
+  // ) {
+  //   content.featuredMedia = createMedia({
+  //     id: featuredMedia.sys.id,
+  //     type: featuredMedia.fields.file.contentType,
+  //     src: featuredMedia.fields.file.url,
+  //     thumbnailSrc: featuredMedia.fields.file.url,
+  //     altText: featuredMedia.fields.title
+  //   })
+  // }
 
   if (contentHtml) {
     content.contentHtml = contentHtml
@@ -122,13 +123,10 @@ export default (entry: Entry): NacelleContent => {
   if (articles) {
     const articleHandles = articles
       .filter((article: Entry) => {
-        if (!article.fields || !article.fields.handle) {
-          return false
-        }
-        return true
+        return !!article.handle
       })
       .map((article: Entry) => {
-        return article.fields.handle
+        return article.handle
       })
 
     content.articleLists = [
@@ -146,9 +144,10 @@ export default (entry: Entry): NacelleContent => {
     content.collectionHandle = collectionHandle
   }
 
-  if (relatedArticles) {
-    content.relatedArticles = relatedArticles.map(mapRelatedArticle)
-  }
+  // TODO:
+  // if (relatedArticles) {
+  //   content.relatedArticles = relatedArticles.map(mapRelatedArticle)
+  // }
 
   content.fields = { ...otherFields }
 
