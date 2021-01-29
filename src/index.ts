@@ -1,6 +1,6 @@
 import NacelleSanityPreviewConnector, {
   NacelleSanityPreviewConnectorParams
-} from '../connector/NacelleSanityPreviewConnector'
+} from './connector/NacelleSanityPreviewConnector'
 
 export default NacelleSanityPreviewConnector
 
