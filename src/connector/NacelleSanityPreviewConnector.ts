@@ -4,7 +4,7 @@ import {
   FetchContentParams,
   FetchPageParams,
   FetchPagesParams,
-  // FetchArticleParams,
+  FetchArticleParams,
   // FetchArticlesParams,
   // FetchBlogParams,
   NacelleContent
@@ -113,18 +113,18 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     })
   }
 
-  // article({
-  //   handle,
-  //   locale,
-  //   blogHandle
-  // }: FetchArticleParams): Promise<NacelleContent> {
-  //   // return this.content({
-  //   //   handle,
-  //   //   locale,
-  //   //   blogHandle,
-  //   //   type: 'article'
-  //   // })
-  // }
+  article({
+    handle,
+    locale,
+    blogHandle
+  }: FetchArticleParams): Promise<NacelleContent> {
+    return this.content({
+      handle,
+      locale,
+      blogHandle,
+      type: 'article'
+    })
+  }
 
   // async articles({
   //   handles,
