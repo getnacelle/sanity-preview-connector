@@ -6,7 +6,7 @@ import {
   FetchPagesParams,
   FetchArticleParams,
   FetchArticlesParams,
-  // FetchBlogParams,
+  FetchBlogParams,
   NacelleContent
 } from '@nacelle/client-js-sdk'
 import sanityClient, { ClientConfig } from '@sanity/client'
@@ -139,11 +139,11 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     })
   }
 
-  // blog({ handle, locale }: FetchBlogParams): Promise<NacelleContent> {
-  //   // return this.content({
-  //   //   handle,
-  //   //   locale: locale,
-  //   //   type: 'blog'
-  //   // })
-  // }
+  blog({ handle, locale }: FetchBlogParams): Promise<NacelleContent> {
+    return this.content({
+      handle,
+      locale,
+      type: 'blog'
+    })
+  }
 }
