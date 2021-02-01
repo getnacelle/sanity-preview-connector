@@ -5,7 +5,7 @@ import {
   FetchPageParams,
   FetchPagesParams,
   FetchArticleParams,
-  // FetchArticlesParams,
+  FetchArticlesParams,
   // FetchBlogParams,
   NacelleContent
 } from '@nacelle/client-js-sdk'
@@ -126,27 +126,18 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     })
   }
 
-  // async articles({
-  //   handles,
-  //   blogHandle,
-  //   locale
-  // }: FetchArticlesParams): Promise<NacelleContent[]> {
-  //   // const requests = handles.map((handle: string) => {
-  //   //   return this.content({
-  //   //     handle,
-  //   //     blogHandle,
-  //   //     locale,
-  //   //     type: 'article'
-  //   //   })
-  //   // })
-  //   // const results = (await Promise.all(
-  //   //   requests.map((p: Promise<NacelleContent>) => p.catch(e => e))
-  //   // )) as Array<NacelleContent | Error>
-  //   // const validResults = results.filter(
-  //   //   result => !(result instanceof Error)
-  //   // ) as NacelleContent[]
-  //   // return validResults
-  // }
+  async articles({
+    handles,
+    blogHandle,
+    locale
+  }: FetchArticlesParams): Promise<NacelleContent[]> {
+    return this.content({
+      handles,
+      locale,
+      blogHandle,
+      type: 'article'
+    })
+  }
 
   // blog({ handle, locale }: FetchBlogParams): Promise<NacelleContent> {
   //   // return this.content({
