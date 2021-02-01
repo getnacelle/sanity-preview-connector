@@ -3,7 +3,7 @@ import {
   NacelleStaticConnectorParams,
   FetchContentParams,
   FetchPageParams,
-  // FetchPagesParams,
+  FetchPagesParams,
   // FetchArticleParams,
   // FetchArticlesParams,
   // FetchBlogParams,
@@ -11,6 +11,7 @@ import {
 } from '@nacelle/client-js-sdk'
 import sanityClient, { ClientConfig } from '@sanity/client'
 import EntriesQuery from '../interfaces/EntriesQuery'
+import EntriesQueryIn from '../interfaces/EntriesQueryIn'
 import Entry from '../interfaces/Entry'
 import mapSanityEntry from '../utils/mapSanityEntry'
 
@@ -39,23 +40,35 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   // Override content methods
   async content({
     handle,
+    handles,
     type = 'page',
     blogHandle = 'blog'
   }: FetchContentParams): Promise<NacelleContent> {
-    const queryTerms: EntriesQuery = {
-      _type: type,
-      'handle.current': handle,
+    const queryTermsEq: EntriesQuery = {
+      _type: type
+    }
+    const queryTermsIn: EntriesQueryIn = {}
+
+    if (handles) {
+      queryTermsIn['handle.current'] = handles
+    } else {
+      queryTermsEq['handle.current'] = handle
     }
     if (type === 'article') {
-      queryTerms.blogHandle = blogHandle
+      queryTermsEq.blogHandle = blogHandle
     }
 
     // see GROQ docs -> https://www.sanity.io/docs/overview-groq
-    const groqFilter = Object.keys(queryTerms).reduce((acc: string, key: string) => {
-      const value = queryTerms[key]
+    const groqFilterEq = Object.keys(queryTermsEq).reduce((acc: string, key: string) => {
+      const value = queryTermsEq[key]
       const filter = `${key} == "${value}"`
       return acc.length ? `${acc} && ${filter}` : `${filter}`
     }, '')
+    const groqFilter = Object.keys(queryTermsIn).reduce((acc: string, key: string) => {
+      const value = queryTermsIn[key].map(v => `'${v}'`)
+      const filter = `${key} in [${value}]`
+      return acc.length ? `${acc} && ${filter}` : `${filter}`
+    }, groqFilterEq)
 
     // Resolve references to section children (_ref -> _id)
     const groqProjection = `{..., sections[]->{...}}`
@@ -65,18 +78,17 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     if (result && result.length > 0) {
       return this.entryMapper(result[0])
     }
+
+    const errorContent = handle
+      ? `type ${type}, handle ${handle}`
+      : `type ${type}, handles ${handles}`
     throw new Error(
-      `Unable to find Sanity preview content with type ${type}, handle ${handle}`
+      `Unable to find Sanity preview content with ${errorContent}`
     )
   }
 
   async allContent(): Promise<NacelleContent[]> {
     const query = `*`
-
-    // const response = await this.sanityClient.getDocuments({
-    //   locale: this.sanityPreviewLocales[0],
-    //   include: this.sanityIncludeDepth
-    // })
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
       return this.entryMapper(result[0])
@@ -93,25 +105,13 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     })
   }
 
-  // async pages({
-  //   handles,
-  //   locale
-  // }: FetchPagesParams): Promise<NacelleContent[]> {
-  //   // const requests = handles.map((handle: string) => {
-  //   //   return this.content({
-  //   //     handle,
-  //   //     locale,
-  //   //     type: 'page'
-  //   //   })
-  //   // })
-  //   // const results = (await Promise.all(
-  //   //   requests.map((p: Promise<NacelleContent>) => p.catch(e => e))
-  //   // )) as Array<NacelleContent | Error>
-  //   // const validResults = results.filter(
-  //   //   result => !(result instanceof Error)
-  //   // ) as NacelleContent[]
-  //   // return validResults
-  // }
+  pages({ handles, locale }: FetchPagesParams): Promise<NacelleContent[]> {
+    return this.content({
+      handles,
+      locale,
+      type: 'page'
+    })
+  }
 
   // article({
   //   handle,
