@@ -70,9 +70,25 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       return acc.length ? `${acc} && ${filter}` : `${filter}`
     }, groqFilterEq)
 
+    // Resolve references to image assets (_ref -> _id)
+    const resolveImages = `"featuredMedia": featuredMedia.asset->{
+      _id,
+      _createdAt,
+      _updatedAt,
+      _type,
+      extension,
+      mimeType,
+      url
+    }`
+
     // Resolve references to section children (_ref -> _id)
-    const groqProjection = `{..., sections[]->{...}}`
-    const query = `*[${groqFilter}]${groqProjection}`
+    const resolveSections = `sections[]->{
+      ...,
+      ${resolveImages}}
+    `
+
+    // Construct full groq
+    const query = `*[${groqFilter}]{..., ${resolveSections}, ${resolveImages}}`
 
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {

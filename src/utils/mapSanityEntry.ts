@@ -1,7 +1,7 @@
 import {
   NacelleContent,
   CreateContentOptions,
-  // createMedia,
+  createMedia,
   createItemList,
   createContent
 } from '@nacelle/client-js-sdk'
@@ -79,10 +79,6 @@ export default (entry: Entry): NacelleContent => {
     content.excerpt = excerpt
   }
 
-  if (sections) {
-    content.sections = sections
-  }
-
   if (tags) {
     content.tags = tags
   }
@@ -96,21 +92,35 @@ export default (entry: Entry): NacelleContent => {
     }
   }
 
-  // TODO: resolve image
-  // if (
-  //   featuredMedia &&
-  //   featuredMedia &&
-  //   featuredMedia.fields.file &&
-  //   featuredMedia.sys
-  // ) {
-  //   content.featuredMedia = createMedia({
-  //     id: featuredMedia.sys.id,
-  //     type: featuredMedia.fields.file.contentType,
-  //     src: featuredMedia.fields.file.url,
-  //     thumbnailSrc: featuredMedia.fields.file.url,
-  //     altText: featuredMedia.fields.title
-  //   })
-  // }
+  if ( featuredMedia ) {
+    content.featuredMedia = createMedia({
+      id: featuredMedia._id,
+      type: featuredMedia.mimeType,
+      src: featuredMedia.url,
+      thumbnailSrc: featuredMedia.url
+      // altText: featuredMedia.fields.title
+    })
+  }
+
+  if ( sections ) {
+    content.sections = sections.map((section: Entry) => {
+      const sectionMedia = section.featuredMedia
+      if (sectionMedia) {
+        return {
+          ...section,
+          featuredMedia: createMedia({
+            id: sectionMedia._id,
+            type: sectionMedia.mimeType,
+            src: sectionMedia.url,
+            thumbnailSrc: sectionMedia.url
+            // altText: featuredMedia.fields.title
+          })
+        }
+      } else {
+        return section
+      }
+    })
+  }
 
   if (contentHtml) {
     content.contentHtml = contentHtml
