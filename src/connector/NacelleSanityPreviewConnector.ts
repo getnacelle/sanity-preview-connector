@@ -37,6 +37,16 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     this.entryMapper = params.entryMapper || mapSanityEntry
   }
 
+  removeDraftCounterparts (entries: Array<Entry>): Array<Entry> {
+    // If draft entry exists, Sanity returns both the draft and the published versions.
+    // In this case we don't want the published version, so filter these entries out.
+    const draftRootIds = entries
+      .filter((entry: Entry) => entry._id.includes('drafts.'))
+      .map((entry: Entry) => entry._id.substr(7))
+
+    return entries.filter((entry: Entry) => !draftRootIds.includes(entry._id))
+  }
+
   // Override content methods
   async content({
     handle,
@@ -92,9 +102,11 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
 
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
+      const resolvedEntries = this.removeDraftCounterparts(result)
+
       return handle
-        ? this.entryMapper(result[0])
-        : result.map(this.entryMapper)
+        ? this.entryMapper(resolvedEntries[0])
+        : resolvedEntries.map(this.entryMapper)
     }
 
     const errorContent = handle
