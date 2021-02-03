@@ -19,20 +19,20 @@ export interface NacelleSanityPreviewConnectorParams
 extends NacelleStaticConnectorParams {
   client?: object
   sanityConfig: ClientConfig
-  sanityToken?: string
   entryMapper?: (entry: Entry) => NacelleContent
 }
 
 export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
   sanityClient: any
   sanityConfig: ClientConfig
-  sanityToken: string
   entryMapper: (entry: Entry) => NacelleContent
 
   constructor(params: NacelleSanityPreviewConnectorParams) {
     super(params)
-    this.sanityToken = params.sanityToken || ''
-    this.sanityConfig = params.sanityConfig
+    this.sanityConfig = {
+      withCredentials: true,
+      ...params.sanityConfig
+    }
     this.sanityClient = params.client || sanityClient(this.sanityConfig)
     this.entryMapper = params.entryMapper || mapSanityEntry
   }
@@ -92,7 +92,9 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
 
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
-      return this.entryMapper(result[0])
+      return handle
+        ? this.entryMapper(result[0])
+        : result.map(this.entryMapper)
     }
 
     const errorContent = handle
@@ -107,7 +109,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     const query = `*`
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
-      return this.entryMapper(result[0])
+      return result.map(this.entryMapper)
     }
 
     return []
