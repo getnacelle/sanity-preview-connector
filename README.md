@@ -18,6 +18,7 @@ const client = new NacelleClient(clientOptions)
 // Initialize the Sanity Preview Connector
 const sanityConnector = new NacelleSanityPreviewConnector({
   sanityConfig: {
+    token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
     dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
     projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
   }
@@ -50,6 +51,11 @@ import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
 export default ({ app }) => {
   if (process.env.NACELLE_PREVIEW_MODE === 'true') {
     // Checks .env file for proper config variables
+    if (!process.env.NACELLE_CMS_PREVIEW_TOKEN) {
+      throw new Error(
+        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_TOKEN in your .env file"
+      )
+    }
     if (!process.env.NACELLE_CMS_PREVIEW_SPACE_ID) {
       throw new Error(
         "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_SPACE_ID in your .env file"
@@ -59,6 +65,7 @@ export default ({ app }) => {
     // Initialize the Sanity Preview Connector
     const sanityConnector = new NacelleSanityPreviewConnector({
       sanityConfig: {
+        token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
         dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
         projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
       }
@@ -90,6 +97,7 @@ env: {
   nacelleToken: process.env.NACELLE_GRAPHQL_TOKEN,
   buildMode: process.env.BUILD_MODE,
   NACELLE_PREVIEW_MODE: process.env.NACELLE_PREVIEW_MODE,
+  NACELLE_CMS_PREVIEW_TOKEN: process.env.NACELLE_CMS_PREVIEW_TOKEN,
   NACELLE_CMS_PREVIEW_SPACE_ID: process.env.NACELLE_CMS_PREVIEW_SPACE_ID,
   NACELLE_CMS_PREVIEW_DATASET: process.env.NACELLE_CMS_PREVIEW_DATASET
 },
@@ -101,6 +109,7 @@ Update your Nuxt app's `.env` file to include variables for initializing the San
 
 ```bash
 NACELLE_PREVIEW_MODE=true
+NACELLE_CMS_PREVIEW_TOKEN="SANITY_TOKEN"
 NACELLE_CMS_PREVIEW_SPACE_ID="SANITY_SPACE_ID"
 NACELLE_CMS_PREVIEW_DATASET="SANITY_DATASET"
 ```
