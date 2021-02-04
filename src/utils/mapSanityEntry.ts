@@ -46,15 +46,11 @@ export default (entry: Entry): NacelleContent => {
   }
 
   if (_createdAt) {
-    content.createdAt = Math.floor(
-      new Date(_createdAt).getTime() / 1000
-    )
+    content.createdAt = Math.floor(new Date(_createdAt).getTime() / 1000)
   }
 
   if (_updatedAt) {
-    content.updatedAt = Math.floor(
-      new Date(_updatedAt).getTime() / 1000
-    )
+    content.updatedAt = Math.floor(new Date(_updatedAt).getTime() / 1000)
   }
 
   if (publishDate) {
@@ -92,7 +88,7 @@ export default (entry: Entry): NacelleContent => {
     }
   }
 
-  if ( featuredMedia ) {
+  if (featuredMedia) {
     content.featuredMedia = createMedia({
       id: featuredMedia._id,
       type: featuredMedia.mimeType,
@@ -102,7 +98,7 @@ export default (entry: Entry): NacelleContent => {
     })
   }
 
-  if ( sections ) {
+  if (sections) {
     content.sections = sections.map((section: Entry) => {
       const sectionMedia = section.featuredMedia
       if (sectionMedia) {
