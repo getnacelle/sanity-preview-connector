@@ -16,10 +16,16 @@ import Entry from '../interfaces/Entry'
 import mapSanityEntry from '../utils/mapSanityEntry'
 
 export interface NacelleSanityPreviewConnectorParams
-extends NacelleStaticConnectorParams {
+  extends NacelleStaticConnectorParams {
   client?: object
   sanityConfig: ClientConfig
   entryMapper?: (entry: Entry) => NacelleContent
+}
+
+export interface FetchContentSanityParams
+  extends Omit<FetchContentParams, 'handle'> {
+  handle?: string
+  handles?: string[]
 }
 
 export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
@@ -37,7 +43,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     this.entryMapper = params.entryMapper || mapSanityEntry
   }
 
-  removeDraftCounterparts (entries: Array<Entry>): Array<Entry> {
+  removeDraftCounterparts(entries: Array<Entry>): Array<Entry> {
     // If draft entry exists, Sanity returns both the draft and the published versions.
     // In this case we don't want the published version, so filter these entries out.
     const draftRootIds = entries
@@ -53,7 +59,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     handles,
     type = 'page',
     blogHandle = 'blog'
-  }: FetchContentParams): Promise<NacelleContent> {
+  }: FetchContentSanityParams): Promise<NacelleContent> {
     const queryTermsEq: EntriesQuery = {
       _type: type
     }
@@ -64,21 +70,28 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     } else {
       queryTermsEq['handle.current'] = handle
     }
+
     if (type === 'article') {
       queryTermsEq.blogHandle = blogHandle
     }
 
     // see GROQ docs -> https://www.sanity.io/docs/overview-groq
-    const groqFilterEq = Object.keys(queryTermsEq).reduce((acc: string, key: string) => {
-      const value = queryTermsEq[key]
-      const filter = `${key} == "${value}"`
-      return acc.length ? `${acc} && ${filter}` : `${filter}`
-    }, '')
-    const groqFilter = Object.keys(queryTermsIn).reduce((acc: string, key: string) => {
-      const value = queryTermsIn[key].map(v => `'${v}'`)
-      const filter = `${key} in [${value}]`
-      return acc.length ? `${acc} && ${filter}` : `${filter}`
-    }, groqFilterEq)
+    const groqFilterEq = Object.keys(queryTermsEq).reduce(
+      (acc: string, key: string) => {
+        const value = queryTermsEq[key]
+        const filter = `${key} == "${value}"`
+        return acc.length ? `${acc} && ${filter}` : `${filter}`
+      },
+      ''
+    )
+    const groqFilter = Object.keys(queryTermsIn).reduce(
+      (acc: string, key: string) => {
+        const value = queryTermsIn[key].map(v => `'${v}'`)
+        const filter = `${key} in [${value}]`
+        return acc.length ? `${acc} && ${filter}` : `${filter}`
+      },
+      groqFilterEq
+    )
 
     // Resolve references to image assets (_ref -> _id)
     const resolveImages = `"featuredMedia": featuredMedia.asset->{
