@@ -16,9 +16,8 @@ export default ({ app }) => {
 
     // Initialize the Sanity Preview Connector
     const sanityConnector = new NacelleSanityPreviewConnector({
-      // sanitySpaceID: process.env.NACELLE_CMS_PREVIEW_SPACE_ID,
-      // sanityToken: process.env.NACELLE_CMS_PREVIEW_TOKEN
       sanityConfig: {
+        token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
         dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
         projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
       }
