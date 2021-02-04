@@ -1,103 +1,117 @@
-# TSDX User Guide
+# Nacelle Sanity Preview Connector
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with TSDX. Let’s get you oriented with what’s here and how to use it.
+This package is a connector for extending the [`@nacelle/client-js-sdk`](https://www.npmjs.com/package/@nacelle/client-js-sdk) in order to allow live previewing content updates from Sanity.
 
-> This TSDX setup is meant for developing libraries (not apps!) that can be published to NPM. If you’re looking to build a Node app, you could use `ts-node-dev`, plain `ts-node`, or simple `tsc`.
+The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle.com/api-reference/client-js-sdk.html#data-module) for fetching Nacelle data. By default the SDK is either fetching data from Nacelle's GraphQL or from static JSON files generated during the Nuxt build process.
 
-> If you’re new to TypeScript, checkout [this handy cheatsheet](https://devhints.io/typescript)
+With this package we can update the `data` module so that by default it will fetch data directly from [Sanity's API](https://www.sanity.io/docs/api-cdn) using the [Sanity Javascript client](https://www.sanity.io/docs/js-client). That way you can view edits and changes on Sanity without needing to re-index those updates with Nacelle.
 
-## Commands
-
-TSDX scaffolds your new library inside `/src`.
-
-To run TSDX, use:
-
-```bash
-npm start # or yarn start
-```
-
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
-
-To do a one-off build, use `npm run build` or `yarn build`.
-
-To run tests, use `npm test` or `yarn test`.
-
-## Configuration
-
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
-
-### Jest
-
-Jest tests are set up to run with `npm test` or `yarn test`.
-
-### Bundle Analysis
-
-[`size-limit`](https://github.com/ai/size-limit) is set up to calculate the real cost of your library with `npm run size` and visualize the bundle with `npm run analyze`.
-
-#### Setup Files
-
-This is the folder structure we set up for you:
-
-```txt
-/src
-  index.tsx       # EDIT THIS
-/test
-  blah.test.tsx   # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
-```
-
-### Rollup
-
-TSDX uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
-
-### TypeScript
-
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
-
-## Continuous Integration
-
-### GitHub Actions
-
-Two actions are added by default:
-
-- `main` which installs deps w/ cache, lints, tests, and builds on all pushes against a Node and OS matrix
-- `size` which comments cost comparison of your library on every pull request using [`size-limit`](https://github.com/ai/size-limit)
-
-## Optimizations
-
-Please see the main `tsdx` [optimizations docs](https://github.com/palmerhq/tsdx#optimizations). In particular, know that you can take advantage of development-only optimizations:
+## Usage
 
 ```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
+import NacelleClient from '@nacelle/client-js-sdk'
+import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
 
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
+// Initialize the Nacelle Client
+const client = new NacelleClient(clientOptions)
+
+// Initialize the Sanity Preview Connector
+const sanityConnector = new NacelleSanityPreviewConnector({
+  sanityConfig: {
+    token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
+    dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
+    projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
+  }
+})
+
+// Update the data module with the new connector
+client.data.update({
+  connector: previewConnector
+})
+
+// Homepage data will be fetched directly from preview API
+const pageData = await client.data.page({ handle: 'homepage' })
+```
+
+## Examples
+
+See our examples for setting up this package with our different frontend app frameworks:
+
+### Nuxt
+
+Setting up your [Nacelle Starter Project](https://docs.getnacelle.com/nuxt/intro-nuxt.html) to enable Sanity previews is a straightforward process using [Nuxt plugins](https://nuxtjs.org/guide/plugins).
+
+#### 1. Add `sanity-previews.js` into your Nuxt project
+
+Create a file `sanity-previews.js` in your Nuxt's `/plugins` directory and paste the following code.
+
+```js
+import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
+
+export default ({ app }) => {
+  if (process.env.NACELLE_PREVIEW_MODE === 'true') {
+    // Checks .env file for proper config variables
+    if (!process.env.NACELLE_CMS_PREVIEW_TOKEN) {
+      throw new Error(
+        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_TOKEN in your .env file"
+      )
+    }
+    if (!process.env.NACELLE_CMS_PREVIEW_SPACE_ID) {
+      throw new Error(
+        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_SPACE_ID in your .env file"
+      )
+    }
+
+    // Initialize the Sanity Preview Connector
+    const sanityConnector = new NacelleSanityPreviewConnector({
+      sanityConfig: {
+        token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
+        dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
+        projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
+      }
+    })
+
+    // Update the Nacelle JS SDK Data module to use preview connector
+    app.$nacelle.data.update({
+      connector: sanityConnector
+    })
+  }
 }
 ```
 
-You can also choose to install and use [invariant](https://github.com/palmerhq/tsdx#invariant) and [warning](https://github.com/palmerhq/tsdx#warning) functions.
+#### 2. Update `nuxt.config.js`
 
-## Module Formats
+Update your `nuxt.config.js` file to include the new plugin file you created.
 
-CJS, ESModules, and UMD module formats are supported.
+```js
+plugins: [
+    '~/plugins/sanity-preview'
+  ],
+```
 
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
+And update the `env` object in the config.
 
-## Named Exports
+```js
+env: {
+  nacelleSpaceID: process.env.NACELLE_SPACE_ID,
+  nacelleToken: process.env.NACELLE_GRAPHQL_TOKEN,
+  buildMode: process.env.BUILD_MODE,
+  NACELLE_PREVIEW_MODE: process.env.NACELLE_PREVIEW_MODE,
+  NACELLE_CMS_PREVIEW_TOKEN: process.env.NACELLE_CMS_PREVIEW_TOKEN,
+  NACELLE_CMS_PREVIEW_SPACE_ID: process.env.NACELLE_CMS_PREVIEW_SPACE_ID,
+  NACELLE_CMS_PREVIEW_DATASET: process.env.NACELLE_CMS_PREVIEW_DATASET
+},
+```
 
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
+#### 3. Update `.env`
 
-## Including Styles
+Update your Nuxt app's `.env` file to include variables for initializing the Sanity preview connector.
 
-There are many ways to ship styles, including with CSS-in-JS. TSDX has no opinion on this, configure how you like.
+```bash
+NACELLE_PREVIEW_MODE=true
+NACELLE_CMS_PREVIEW_TOKEN="SANITY_TOKEN"
+NACELLE_CMS_PREVIEW_SPACE_ID="SANITY_SPACE_ID"
+NACELLE_CMS_PREVIEW_DATASET="SANITY_DATASET"
+```
 
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
-
-## Publishing to NPM
-
-We recommend using [np](https://github.com/sindresorhus/np).
+You're all set! Running `npm run dev` your Nacelle Nuxt app will now fetch data directly from Sanity. Try updating a piece of content and refreshing the page without publishing.
