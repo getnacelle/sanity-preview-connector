@@ -1,7 +1,11 @@
 // import Sys from './Sys'
+import FeaturedMedia from './FeaturedMedia'
 
 export default interface Entry {
+  [key: string]: string | number | undefined | Array<Entry> | Array<string> | Array<object> | object
   // sys: Sys
+  _key: string
+  _ref: string
 
   // move these to Sys?
   _createdAt: string
@@ -23,15 +27,7 @@ export default interface Entry {
     bio: string
     email: string
   }
-  featuredMedia?: {
-    _id: string
-    _createdAt: string
-    _updatedAt: string
-    _type: string
-    extension: string
-    mimeType: string
-    url: string
-  }
+  featuredMedia?: FeaturedMedia
   contentHtml?: any
   publishDate?: string
   blogHandle?: string

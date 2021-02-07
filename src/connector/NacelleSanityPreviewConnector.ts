@@ -13,12 +13,14 @@ import sanityClient, { ClientConfig } from '@sanity/client'
 import EntriesQuery from '../interfaces/EntriesQuery'
 import EntriesQueryIn from '../interfaces/EntriesQueryIn'
 import Entry from '../interfaces/Entry'
-import mapSanityEntry from '../utils/mapSanityEntry'
+import Reference from '../interfaces/Reference'
+import mapSanityEntry from '../utils/mapSanityEntry' 
 
 export interface NacelleSanityPreviewConnectorParams
   extends NacelleStaticConnectorParams {
   client?: object
   sanityConfig: ClientConfig
+  include: number
   entryMapper?: (entry: Entry) => NacelleContent
 }
 
@@ -26,11 +28,13 @@ export interface FetchContentSanityParams
   extends Omit<FetchContentParams, 'handle'> {
   handle?: string
   handles?: string[]
+  maxDepth?: number
 }
 
 export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
   sanityClient: any
   sanityConfig: ClientConfig
+  maxDepth: number
   entryMapper: (entry: Entry) => NacelleContent
 
   constructor(params: NacelleSanityPreviewConnectorParams) {
@@ -39,6 +43,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       withCredentials: true,
       ...params.sanityConfig
     }
+    this.maxDepth = params.include || 3
     this.sanityClient = params.client || sanityClient(this.sanityConfig)
     this.entryMapper = params.entryMapper || mapSanityEntry
   }
@@ -94,7 +99,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     )
 
     // Resolve references to image assets (_ref -> _id)
-    const resolveImages = `"featuredMedia": featuredMedia.asset->{
+    const resolveMedia = `"featuredMedia.asset": featuredMedia.asset->{
       _id,
       _createdAt,
       _updatedAt,
@@ -107,15 +112,21 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     // Resolve references to section children (_ref -> _id)
     const resolveSections = `sections[]->{
       ...,
-      ${resolveImages}}
+      ${resolveMedia}}
     `
+    // const resolveSections = `"sections": sections`
 
     // Construct full groq
-    const query = `*[${groqFilter}]{..., ${resolveSections}, ${resolveImages}}`
+    const query = `*[${groqFilter}]{..., ${resolveSections}, ${resolveMedia}}`
 
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
-      const resolvedEntries = this.removeDraftCounterparts(result)
+      const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
+
+      const resolvedEntryPromises = dedupedEntries
+        .map((entry: Entry) => this.resolveReferences(entry))
+
+      const resolvedEntries: Array<Entry> = await Promise.all(resolvedEntryPromises)
 
       return handle
         ? this.entryMapper(resolvedEntries[0])
@@ -128,6 +139,59 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     throw new Error(
       `Unable to find Sanity preview content with ${errorContent}`
     )
+  }
+
+  // Recursively search and resolve references up to a set depth.
+  // Depth pertains only to depth of references not actually object levels
+  async resolveReferences(obj: any, currentDepth: number = 0): Promise<any> {
+    // Resolve each object key
+    let newObj: any = {...obj}
+
+    if (typeof obj === 'object' && typeof obj._ref === 'string') {
+      newObj = await this.lookupReference(obj)
+      return newObj
+    }
+
+    const resolvedPromises = Object.keys(obj).map(async (key: string) => {
+      let value: any = obj[key]
+      let resolvedValue: any = value
+
+      if (Array.isArray(value)) {
+        const allResolved = value.map(async (item: any) => {
+          return await this.resolveReferences(item, currentDepth)
+        })
+        resolvedValue = await Promise.all(allResolved)
+      } else if (typeof value === 'object' && typeof value._ref === 'string') {
+        resolvedValue = await this.lookupReference(value)
+      } else if (typeof value === 'object') {
+        resolvedValue = await this.resolveReferences(value, currentDepth)
+      }
+      newObj[key] = resolvedValue
+    })
+    await Promise.all(resolvedPromises)
+    return newObj
+  }
+  async lookupReference(reference: Reference, currentDepth: number = 0): Promise<any> {
+    // Lookup References
+    const referencedEntry = await this.fetchEntryById(reference._ref)
+
+    if (
+      referencedEntry &&
+      currentDepth < this.maxDepth
+    ) {
+      const newDepth = currentDepth + 1
+      return this.resolveReferences(referencedEntry, newDepth)
+    } else {
+      throw new Error(
+        `Unable to dereference Sanity entry with _id ${reference._ref}`
+      )
+    }
+  }
+  async fetchEntryById(id: string): Promise<Entry> {
+    const query = `*[_id == "${id}"]`
+    const result = await this.sanityClient.fetch(query)
+
+    return result && result[0]
   }
 
   async allContent(): Promise<NacelleContent[]> {

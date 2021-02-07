@@ -6,6 +6,7 @@ import {
   createContent
 } from '@nacelle/client-js-sdk'
 import Entry from '../interfaces/Entry'
+import FeaturedMedia from '../interfaces/FeaturedMedia'
 // import mapRelatedArticle from './mapRelatedArticle'
 
 export default (entry: Entry): NacelleContent => {
@@ -88,14 +89,27 @@ export default (entry: Entry): NacelleContent => {
     }
   }
 
-  if (featuredMedia) {
-    content.featuredMedia = createMedia({
-      id: featuredMedia._id,
-      type: featuredMedia.mimeType,
-      src: featuredMedia.url,
-      thumbnailSrc: featuredMedia.url
-      // altText: featuredMedia.fields.title
+  function resolveMedia(featuredMedia: FeaturedMedia) {
+    const media = featuredMedia.asset || featuredMedia
+    const mappedMedia = createMedia({
+      id: media._id,
+      type: media.mimeType,
+      src: media.url,
+      thumbnailSrc: media.url
+      // altText: media.fields.title
     })
+
+    if (featuredMedia.asset) {
+      return {
+        ...featuredMedia,
+        asset: mappedMedia
+      }
+    }
+    return mappedMedia
+  }
+
+  if (featuredMedia) {
+    content.featuredMedia = resolveMedia(featuredMedia)
   }
 
   if (sections) {
@@ -104,13 +118,7 @@ export default (entry: Entry): NacelleContent => {
       if (sectionMedia) {
         return {
           ...section,
-          featuredMedia: createMedia({
-            id: sectionMedia._id,
-            type: sectionMedia.mimeType,
-            src: sectionMedia.url,
-            thumbnailSrc: sectionMedia.url
-            // altText: featuredMedia.fields.title
-          })
+          featuredMedia: resolveMedia(sectionMedia)
         }
       } else {
         return section
