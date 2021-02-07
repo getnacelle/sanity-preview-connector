@@ -1,0 +1,19 @@
+{
+  "name": "example-nacelle-sanity-preview-vanilla-js",
+  "version": "0.0.1",
+  "description": "Example project which uses the @nacelle/sanity-preview-connector to fetch unpublished data from Sanity using the Nacelle Client JS SDK",
+  "main": "src/index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^2.0.0-beta.64"
+  },
+  "author": "Nacelle",
+  "license": "ISC",
+  "dependencies": {
+    "@nacelle/client-js-sdk": "^3.1.1"
+  }
+}

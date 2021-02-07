@@ -198,7 +198,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     const query = `*`
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
-      return result.map(this.entryMapper)
+      return this.removeDraftCounterparts(result).map(this.entryMapper)
     }
 
     return []
