@@ -1,6 +1,6 @@
 // import Sys from './Sys'
 import FeaturedMedia from './FeaturedMedia'
-
+import ArbitraryObject from './ArbitraryObject'
 export default interface Entry {
   [key: string]:
     | string
@@ -13,9 +13,6 @@ export default interface Entry {
   _key: string
   _ref: string
 
-  // sys: Sys
-
-  // move these to Sys?
   _createdAt: string
   _id: string
   _rev: string
@@ -25,22 +22,18 @@ export default interface Entry {
   handle: string
   locale?: string
   title?: string
+  publishDate?: string | Date
   description?: string
   excerpt?: string
-  sections?: Array<Entry>
+  fields?: Entry
+  sections?: Entry[]
   tags?: Array<string>
-  author?: {
-    firstName: string
-    lastName: string
-    bio: string
-    email: string
-  }
+  author?: ArbitraryObject
   featuredMedia?: FeaturedMedia
-  contentHtml?: any
-  publishDate?: string
+  contentHtml?: string | undefined
   blogHandle?: string
   articles?: Array<Entry>
-  articleLists?: any
+  articleLists?: ArbitraryObject[]
   collectionHandle?: string
-  relatedArticles?: Array<object>
+  relatedArticles?: ArbitraryObject[]
 }
