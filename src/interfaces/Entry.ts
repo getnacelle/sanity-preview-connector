@@ -2,10 +2,18 @@
 import FeaturedMedia from './FeaturedMedia'
 
 export default interface Entry {
-  [key: string]: string | number | undefined | Array<Entry> | Array<string> | Array<object> | object
-  // sys: Sys
+  [key: string]:
+    | string
+    | number
+    | undefined
+    | Array<Entry>
+    | Array<string>
+    | Array<object>
+    | object
   _key: string
   _ref: string
+
+  // sys: Sys
 
   // move these to Sys?
   _createdAt: string

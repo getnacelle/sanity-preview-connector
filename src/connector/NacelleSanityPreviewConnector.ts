@@ -14,7 +14,7 @@ import EntriesQuery from '../interfaces/EntriesQuery'
 import EntriesQueryIn from '../interfaces/EntriesQueryIn'
 import Entry from '../interfaces/Entry'
 import Reference from '../interfaces/Reference'
-import mapSanityEntry from '../utils/mapSanityEntry' 
+import mapSanityEntry from '../utils/mapSanityEntry'
 
 export interface NacelleSanityPreviewConnectorParams
   extends NacelleStaticConnectorParams {
@@ -123,10 +123,13 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     if (result && result.length > 0) {
       const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
 
-      const resolvedEntryPromises = dedupedEntries
-        .map((entry: Entry) => this.resolveReferences(entry))
+      const resolvedEntryPromises = dedupedEntries.map((entry: Entry) =>
+        this.resolveReferences(entry)
+      )
 
-      const resolvedEntries: Array<Entry> = await Promise.all(resolvedEntryPromises)
+      const resolvedEntries: Array<Entry> = await Promise.all(
+        resolvedEntryPromises
+      )
 
       return handle
         ? this.entryMapper(resolvedEntries[0])
@@ -145,7 +148,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   // Depth pertains only to depth of references not actually object levels
   async resolveReferences(obj: any, currentDepth: number = 0): Promise<any> {
     // Resolve each object key
-    let newObj: any = {...obj}
+    let newObj: any = { ...obj }
 
     if (typeof obj === 'object' && typeof obj._ref === 'string') {
       newObj = await this.lookupReference(obj)
@@ -171,14 +174,14 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     await Promise.all(resolvedPromises)
     return newObj
   }
-  async lookupReference(reference: Reference, currentDepth: number = 0): Promise<any> {
+  async lookupReference(
+    reference: Reference,
+    currentDepth: number = 0
+  ): Promise<any> {
     // Lookup References
     const referencedEntry = await this.fetchEntryById(reference._ref)
 
-    if (
-      referencedEntry &&
-      currentDepth < this.maxDepth
-    ) {
+    if (referencedEntry && currentDepth < this.maxDepth) {
       const newDepth = currentDepth + 1
       return this.resolveReferences(referencedEntry, newDepth)
     } else {
