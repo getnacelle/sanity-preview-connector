@@ -17,28 +17,28 @@ if (typeof window !== 'undefined') {
 const $nacelle = new NacelleClient(settings)
 if (import.meta.env.VITE_NACELLE_PREVIEW_MODE) {
   // Checks .env file for proper config variables
-  if (!import.meta.env.VITE_NACELLE_CMS_PREVIEW_PROJECT_ID) {
+  if (!import.meta.env.VITE_SANITY_PROJECT_ID) {
     throw new Error(
-      "Couldn't get data from your CMS. Make sure to include VITE_NACELLE_CMS_PREVIEW_PROJECT_ID in your .env file"
+      "Couldn't get data from your CMS. Make sure to include VITE_SANITY_PROJECT_ID in your .env file"
     )
   }
-  if (!import.meta.env.VITE_NACELLE_CMS_PREVIEW_DATASET) {
+  if (!import.meta.env.VITE_SANITY_DATASET) {
     throw new Error(
-      "Couldn't get data from your CMS. Make sure to include VITE_NACELLE_CMS_PREVIEW_DATASET in your .env file"
+      "Couldn't get data from your CMS. Make sure to include VITE_SANITY_DATASET in your .env file"
     )
   }
-  if (!import.meta.env.VITE_NACELLE_CMS_PREVIEW_TOKEN) {
+  if (!import.meta.env.VITE_SANITY_TOKEN) {
     throw new Error(
-      "Couldn't get data from your CMS. Make sure to include VITE_NACELLE_CMS_PREVIEW_TOKEN in your .env file"
+      "Couldn't get data from your CMS. Make sure to include VITE_SANITY_TOKEN in your .env file"
     )
   }
 
   // Initialize the Sanity Preview Connector
   const sanityConnector = new NacelleSanityPreviewConnector({
     sanityConfig: {
-      dataset: import.meta.env.VITE_NACELLE_CMS_PREVIEW_DATASET,
-      projectId: import.meta.env.VITE_NACELLE_CMS_PREVIEW_PROJECT_ID,
-      token: import.meta.env.VITE_NACELLE_CMS_PREVIEW_TOKEN
+      dataset: import.meta.env.VITE_SANITY_DATASET,
+      projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
+      token: import.meta.env.VITE_SANITY_TOKEN
     }
   })
 
