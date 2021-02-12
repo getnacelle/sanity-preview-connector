@@ -1,25 +1,43 @@
+// ~/plugins/sanity-preview.js
+//
+// in `nuxt.config.js`, register this plugin by adding it to the `plugins` array:
+//
+//    plugins: ['sanity-preview']
+//
 import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
 
 export default ({ app }) => {
-  if (process.env.NACELLE_PREVIEW_MODE) {
+  const {
+    NACELLE_PREVIEW_MODE,
+    SANITY_PROJECT_ID,
+    SANITY_DATASET,
+    SANITY_TOKEN
+  } = process.env
+
+  if (NACELLE_PREVIEW_MODE === 'true') {
     // Checks .env file for proper config variables
-    if (!process.env.NACELLE_CMS_PREVIEW_TOKEN) {
+    if (!SANITY_PROJECT_ID) {
       throw new Error(
-        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_TOKEN in your .env file"
+        "Couldn't get data from your CMS. Make sure to include SANITY_PROJECT_ID in your .env file"
       )
     }
-    if (!process.env.NACELLE_CMS_PREVIEW_SPACE_ID) {
+    if (!SANITY_DATASET) {
       throw new Error(
-        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_SPACE_ID in your .env file"
+        "Couldn't get data from your CMS. Make sure to include SANITY_DATASET in your .env file"
+      )
+    }
+    if (!SANITY_TOKEN) {
+      throw new Error(
+        "Couldn't get data from your CMS. Make sure to include SANITY_TOKEN in your .env file"
       )
     }
 
     // Initialize the Sanity Preview Connector
     const sanityConnector = new NacelleSanityPreviewConnector({
       sanityConfig: {
-        token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
-        dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
-        projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
+        projectId: SANITY_PROJECT_ID,
+        dataset: SANITY_DATASET,
+        token: SANITY_TOKEN
       }
     })
 
