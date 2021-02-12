@@ -1,13 +1,12 @@
 import {
   NacelleContent,
   CreateContentOptions,
-  createMedia,
   createItemList,
   createContent
 } from '@nacelle/client-js-sdk'
 import Entry from '../interfaces/Entry'
-import FeaturedMedia from '../interfaces/FeaturedMedia'
-// import mapRelatedArticle from './mapRelatedArticle'
+import getShortText from './getShortText'
+import getMedia from './getMedia'
 
 export default (entry: Entry): NacelleContent => {
   const content = {
@@ -65,7 +64,7 @@ export default (entry: Entry): NacelleContent => {
   }
 
   if (handle) {
-    content.handle = handle
+    content.handle = getShortText(entry, 'handle')
   }
 
   if (description) {
@@ -89,39 +88,31 @@ export default (entry: Entry): NacelleContent => {
     }
   }
 
-  function resolveMedia(featuredMedia: FeaturedMedia) {
-    const media = featuredMedia.asset || featuredMedia
-    const mappedMedia = createMedia({
-      id: media._id,
-      type: media.mimeType,
-      src: media.url,
-      thumbnailSrc: media.url
-      // altText: media.fields.title
-    })
-
-    if (featuredMedia.asset) {
-      return {
-        ...featuredMedia,
-        asset: mappedMedia
-      }
-    }
-    return mappedMedia
-  }
-
   if (featuredMedia) {
-    content.featuredMedia = resolveMedia(featuredMedia)
+    const altText = getShortText(otherFields, 'altText')
+
+    if (altText) {
+      featuredMedia.altText = altText
+    }
+
+    content.featuredMedia = getMedia(featuredMedia)
   }
 
   if (sections) {
     content.sections = sections.map((section: Entry) => {
-      const sectionMedia = section.featuredMedia
-      if (sectionMedia) {
-        return {
-          ...section,
-          featuredMedia: resolveMedia(sectionMedia)
-        }
-      } else {
-        return section
+      const altText = getShortText(section, 'altText')
+
+      if (section && section.featuredMedia && altText) {
+        section.featuredMedia.altText = altText
+      }
+
+      const featuredMedia = getMedia(section.featuredMedia)
+      const handle = getShortText(section, 'handle')
+
+      return {
+        ...section,
+        featuredMedia,
+        handle
       }
     })
   }
@@ -131,17 +122,13 @@ export default (entry: Entry): NacelleContent => {
   }
 
   if (blogHandle) {
-    content.blogHandle = blogHandle
+    content.blogHandle = getShortText(entry, 'blogHandle')
   }
 
   if (articles) {
     const articleHandles = articles
-      .filter((article: Entry) => {
-        return !!article.handle
-      })
-      .map((article: Entry) => {
-        return article.handle
-      })
+      .filter((article: Entry) => Boolean(article.handle))
+      .map((article: Entry) => getShortText(article, 'handle'))
 
     content.articleLists = [
       createItemList({
@@ -157,11 +144,6 @@ export default (entry: Entry): NacelleContent => {
   if (collectionHandle) {
     content.collectionHandle = collectionHandle
   }
-
-  // TODO:
-  // if (relatedArticles) {
-  //   content.relatedArticles = relatedArticles.map(mapRelatedArticle)
-  // }
 
   content.fields = { ...otherFields }
 
