@@ -8,6 +8,7 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
+    "test:ci": "tsdx test --collectCoverage",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
