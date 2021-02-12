@@ -1,5 +1,4 @@
-import ArbitraryObject from '../interfaces/ArbitraryObject'
-
+import { ArbitraryObject } from '~/interfaces'
 /**
  * Get a string value from an entry, whether the string value is stored as a string or within a Slug object
  * @param entry - the entry object

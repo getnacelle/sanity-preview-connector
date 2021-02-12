@@ -10,11 +10,8 @@ import {
   NacelleContent
 } from '@nacelle/client-js-sdk'
 import sanityClient, { ClientConfig, SanityClient } from '@sanity/client'
-import EntriesQuery from '../interfaces/EntriesQuery'
-import EntriesQueryIn from '../interfaces/EntriesQueryIn'
-import Entry from '../interfaces/Entry'
-import Reference from '../interfaces/Reference'
-import mapSanityEntry from '../utils/mapSanityEntry'
+import { Entry, EntriesQuery, EntriesQueryIn, Reference } from '~/interfaces'
+import { mapSanityEntry } from '~/utils'
 
 export interface NacelleSanityPreviewConnectorParams
   extends NacelleStaticConnectorParams {

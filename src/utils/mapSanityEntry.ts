@@ -4,7 +4,7 @@ import {
   createItemList,
   createContent
 } from '@nacelle/client-js-sdk'
-import Entry from '../interfaces/Entry'
+import { Entry } from '~/interfaces'
 import getShortText from './getShortText'
 import getMedia from './getMedia'
 

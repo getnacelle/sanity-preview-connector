@@ -1,5 +1,5 @@
 import { createMedia } from '@nacelle/client-js-sdk'
-import FeaturedMedia from '../interfaces/FeaturedMedia'
+import { FeaturedMedia } from '~/interfaces'
 
 export default function resolveMedia(featuredMedia: FeaturedMedia | undefined) {
   if (!featuredMedia) {
