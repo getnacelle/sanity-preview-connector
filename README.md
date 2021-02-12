@@ -129,3 +129,7 @@ SANITY_DATASET=your-sanity-dataset
 ```
 
 You're all set! Running `npm run dev` your Nacelle Nuxt app will now fetch data directly from Sanity. Try updating a piece of content and refreshing the page without publishing.
+
+## Security
+
+`@nacelle/sanity-preview-connector` requires that you provide a Sanity token, and that token can be exposed in client-side JavaScript. We recommend that you take precautions to limit access to a site which exposes this token in its client code. Leading JAMstack hosting providers provide mechanisms for restricting access; we recommend that you consult their documentation (e.g. [Vercel](https://vercel.com/blog/protecting-deployments), [Netlify](https://docs.netlify.com/visitor-access/password-protection/)). By using `@nacelle/sanity-preview-connector`, you assume responsibility for taking precautions to limit access to sensitive tokens used by this package.
