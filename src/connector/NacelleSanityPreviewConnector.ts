@@ -210,10 +210,20 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   }
 
   async allContent(): Promise<NacelleContent[]> {
-    const query = `*`
+    const query = '*'
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
-      return this.removeDraftCounterparts(result).map(this.entryMapper)
+      const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
+
+      const resolvedEntryPromises = dedupedEntries.map(
+        async (entry: Entry) => await this.resolveReferences(entry)
+      )
+
+      const resolvedEntries: Array<Entry> = await Promise.all(
+        resolvedEntryPromises
+      )
+
+      return resolvedEntries.map(entry => this.entryMapper(entry))
     }
 
     return []
