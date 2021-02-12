@@ -1,38 +1,15 @@
 import mockArticle from './mockArticle'
 
 export default {
-  sys: {
-    space: {
-      sys: {
-        type: 'Link',
-        linkType: 'Space',
-        id: 'q3p82tpg7dld'
-      }
-    },
-    type: 'Entry',
-    id: '5cULf1o9TdEQIquxx22P1a',
-    contentType: {
-      sys: {
-        type: 'Link',
-        linkType: 'ContentType',
-        id: 'blog'
-      }
-    },
-    revision: 2,
-    createdAt: '2020-01-28T00:43:49.958Z',
-    updatedAt: '2020-02-05T21:33:00.603Z',
-    environment: {
-      sys: {
-        id: 'master',
-        type: 'Link',
-        linkType: 'Environment'
-      }
-    },
-    locale: 'en-US'
+  _createdAt: '2020-04-08T16:23:19Z',
+  _id: '962d9330-41a2-42cc-8e0f-08dfe36766cd',
+  _rev: 'HLYl3VZTZw4OPrrg2SUpIY',
+  _type: 'blog',
+  _updatedAt: '2020-10-07T19:08:01Z',
+  articles: [mockArticle],
+  handle: {
+    _type: 'slug',
+    current: 'the-future-of-furniture'
   },
-  fields: {
-    title: 'News',
-    handle: 'news',
-    articles: [mockArticle]
-  }
+  title: 'blog'
 }
