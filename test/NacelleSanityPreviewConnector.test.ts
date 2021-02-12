@@ -23,7 +23,8 @@ describe('NacelleSanityPreviewConnector', () => {
     const connector = new NacelleSanityPreviewConnector({
       sanityConfig: {
         dataset: credentials.dataset,
-        projectId: credentials.projectId
+        projectId: credentials.projectId,
+        token: credentials.token
       }
     })
 
@@ -31,6 +32,7 @@ describe('NacelleSanityPreviewConnector', () => {
     expect(connector.basePath).toBe('/')
     expect(connector.sanityConfig.dataset).toBe(process.env.SANITY_DATASET)
     expect(connector.sanityConfig.projectId).toBe(process.env.SANITY_PROJECT_ID)
+    expect(connector.sanityConfig.token).toBe(process.env.SANITY_TOKEN)
   })
 
   it('content calls sanity client fetch', async () => {
