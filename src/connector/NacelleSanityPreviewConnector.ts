@@ -11,7 +11,8 @@ import {
 } from '@nacelle/client-js-sdk'
 import sanityClient, { ClientConfig, SanityClient } from '@sanity/client'
 import { Entry, EntriesQuery, EntriesQueryIn, Reference } from '~/interfaces'
-import { mapSanityEntry } from '~/utils'
+import { mapSanityEntry } from '../utils'
+import { MediaProjection, sectionsProjection } from '../groq'
 
 export interface NacelleSanityPreviewConnectorParams
   extends NacelleStaticConnectorParams {
@@ -19,6 +20,8 @@ export interface NacelleSanityPreviewConnectorParams
   client?: SanityClient | any
   include?: number
   entryMapper?: (entry: Entry) => NacelleContent
+  mediaProjection?: string
+  sectionsProjection?: string
 }
 
 export interface FetchContentSanityParams
@@ -33,6 +36,8 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   sanityConfig: ClientConfig
   maxDepth: number
   entryMapper: (entry: Entry) => NacelleContent
+  mediaProjection?: string
+  sectionsProjection?: string
 
   constructor(params: NacelleSanityPreviewConnectorParams) {
     super(params)
@@ -42,6 +47,9 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     }
     this.maxDepth = params.include || 3
     this.entryMapper = params.entryMapper || mapSanityEntry
+    this.mediaProjection = params.mediaProjection || MediaProjection
+    this.sectionsProjection =
+      params.sectionsProjection || sectionsProjection(this.mediaProjection)
     const useCdn =
       typeof this.sanityConfig.useCdn === 'boolean'
         ? this.sanityConfig.useCdn
@@ -102,25 +110,12 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       groqFilterEq
     )
 
-    // Resolve references to image assets (_ref -> _id)
-    const resolveMedia = `"featuredMedia.asset": featuredMedia.asset->{
-      _id,
-      _createdAt,
-      _updatedAt,
-      _type,
-      extension,
-      mimeType,
-      url
-    }`
-
-    // Resolve references to section children (_ref -> _id)
-    const resolveSections = `sections[]->{
-      ...,
-      ${resolveMedia}}
-    `
-
     // Construct full groq
-    const query = `*[${groqFilter}]{..., ${resolveSections}, ${resolveMedia}}`
+    const query = `*[${groqFilter}]{
+      ...,
+      ${this.sectionsProjection},
+      ${this.mediaProjection}}
+    `
 
     const result = await this.sanityClient.fetch(query)
 
@@ -144,7 +139,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
 
     const errorContent = singleHandle
       ? `type ${type}, handle ${handle}`
-      : `type ${type}, handles ${handles}`
+      : `type ${type}, handles ${handles?.join(', ')}`
 
     throw new Error(
       `Unable to find Sanity preview content with ${errorContent}`
@@ -200,14 +195,22 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
   }
 
   async fetchEntryById(id: string): Promise<Entry> {
-    const query = `*[_id == "${id}"]`
+    const query = `*[_id == "${id}"]{
+      ...,
+      ${this.sectionsProjection},
+      ${this.mediaProjection}}
+    `
     const result = await this.sanityClient.fetch(query)
 
     return result && result[0]
   }
 
   async allContent(): Promise<NacelleContent[]> {
-    const query = '*'
+    const query = `*[]{
+      ...,
+      ${this.sectionsProjection},
+      ${this.mediaProjection}}
+    `
     const result = await this.sanityClient.fetch(query)
     if (result && result.length > 0) {
       const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)

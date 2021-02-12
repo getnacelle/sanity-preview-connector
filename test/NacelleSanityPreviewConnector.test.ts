@@ -98,7 +98,6 @@ describe('NacelleSanityPreviewConnector', () => {
     await connector.allContent()
 
     expect(mockClient.fetch).toHaveBeenCalledTimes(1)
-    expect(mockClient.fetch).toHaveBeenCalledWith('*')
   })
 
   it('page calls sanity client with correct options', async () => {
