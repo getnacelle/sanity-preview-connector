@@ -15,3 +15,7 @@ a {
 select {
   padding: 0.33em;
 }
+
+#results {
+  text-align: left;
+}

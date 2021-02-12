@@ -4,12 +4,17 @@ import './style.css'
 async function fetchNacelleData() {
   const allContent = await $nacelle.data.allContent()
   const allContentByType = allContent.reduce((acc, el) => {
-    acc[el.type] = acc[el.type] ? { ...acc[el.type], el } : el
+    if (!acc[el.type]) {
+      acc[el.type] = []
+    }
+
+    acc[el.type].push(el)
 
     return acc
   }, {})
   const allContentTypes = Object.keys(allContentByType)
   const select = document.querySelector('select')
+
   Object.keys(allContentByType).forEach(type => {
     const existingOption = document.querySelector('option[value="page"]')
     if (!existingOption) {
@@ -22,10 +27,10 @@ async function fetchNacelleData() {
   const idx = select.selectedIndex !== -1 ? select.selectedIndex : 0
   let activeType = allContentTypes[idx]
 
-  function handleContentTypeChange(e) {
+  async function handleContentTypeChange(e) {
     activeType = e.target.value
-    const data = JSON.stringify(allContentByType[activeType], null, 2)
-    document.getElementById('results').innerText = data
+    const data = allContentByType[activeType]
+    document.getElementById('results').innerText = JSON.stringify(data, null, 2)
   }
 
   select.oninput = handleContentTypeChange
@@ -41,7 +46,8 @@ fetchNacelleData()
 document.getElementById('refresh').onclick = () => {
   console.info(`[${new Date().toLocaleTimeString()}] Fetching fresh data...`)
   document.getElementById('refresh').disabled = true
-  fetchNacelleData().then(
-    () => (document.getElementById('refresh').disabled = false)
-  )
+  fetchNacelleData().then(() => {
+    document.getElementById('refresh').disabled = false
+    console.info(`[${new Date().toLocaleTimeString()}] Fetch complete.`)
+  })
 }
