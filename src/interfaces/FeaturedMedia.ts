@@ -1,11 +1,13 @@
 export default interface FeaturedMedia {
-  _id: string
-  _createdAt: string
-  _updatedAt: string
   _type: string
-  extension: string
-  mimeType: string
-  url: string
+  _id?: string
+  _createdAt?: string
+  _ref?: string
+  _updatedAt?: string
+  extension?: string
+  mimeType?: string
+  url?: string
+  altText?: string
 
   asset?: FeaturedMedia
 }

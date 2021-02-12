@@ -1,17 +1,11 @@
-// import Sys from './Sys'
-import FeaturedMedia from './FeaturedMedia'
 import ArbitraryObject from './ArbitraryObject'
-export default interface Entry {
-  [key: string]:
-    | string
-    | number
-    | undefined
-    | Array<Entry>
-    | Array<string>
-    | Array<object>
-    | object
-  _key: string
-  _ref: string
+import Author from './Author'
+import FeaturedMedia from './FeaturedMedia'
+import Slug from './Slug'
+import { CreateItemListOptions } from '@nacelle/client-js-sdk'
+export default interface Entry extends ArbitraryObject {
+  _key?: string
+  _ref?: string
 
   _createdAt: string
   _id: string
@@ -19,21 +13,23 @@ export default interface Entry {
   _type: string
   _updatedAt: string
 
-  handle: string
+  handle: string | Slug
   locale?: string
   title?: string
   publishDate?: string | Date
+  publishedDate?: string | Date
   description?: string
   excerpt?: string
   fields?: Entry
   sections?: Entry[]
   tags?: Array<string>
-  author?: ArbitraryObject
+  author?: Author
   featuredMedia?: FeaturedMedia
+  content?: ArbitraryObject | ArbitraryObject[]
   contentHtml?: string | undefined
-  blogHandle?: string
+  blogHandle?: string | Slug
   articles?: Array<Entry>
-  articleLists?: ArbitraryObject[]
   collectionHandle?: string
-  relatedArticles?: ArbitraryObject[]
+  articleLists?: CreateItemListOptions[] | Entry[]
+  relatedArticles?: CreateItemListOptions[] | Entry[]
 }
