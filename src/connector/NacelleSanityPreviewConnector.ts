@@ -9,7 +9,7 @@ import {
   FetchBlogParams,
   NacelleContent
 } from '@nacelle/client-js-sdk'
-import sanityClient, { ClientConfig } from '@sanity/client'
+import sanityClient, { ClientConfig, SanityClient } from '@sanity/client'
 import EntriesQuery from '../interfaces/EntriesQuery'
 import EntriesQueryIn from '../interfaces/EntriesQueryIn'
 import Entry from '../interfaces/Entry'
@@ -18,9 +18,9 @@ import mapSanityEntry from '../utils/mapSanityEntry'
 
 export interface NacelleSanityPreviewConnectorParams
   extends NacelleStaticConnectorParams {
-  client?: object
   sanityConfig: ClientConfig
-  include: number
+  client?: SanityClient | any
+  include?: number
   entryMapper?: (entry: Entry) => NacelleContent
 }
 
@@ -32,7 +32,7 @@ export interface FetchContentSanityParams
 }
 
 export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
-  sanityClient: any
+  sanityClient: SanityClient
   sanityConfig: ClientConfig
   maxDepth: number
   entryMapper: (entry: Entry) => NacelleContent
@@ -44,8 +44,13 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       ...params.sanityConfig
     }
     this.maxDepth = params.include || 3
-    this.sanityClient = params.client || sanityClient(this.sanityConfig)
     this.entryMapper = params.entryMapper || mapSanityEntry
+    const useCdn =
+      typeof this.sanityConfig.useCdn === 'boolean'
+        ? this.sanityConfig.useCdn
+        : false
+    this.sanityClient =
+      params.client || sanityClient({ ...this.sanityConfig, useCdn })
   }
 
   removeDraftCounterparts(entries: Array<Entry>): Array<Entry> {
@@ -64,11 +69,13 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     handles,
     type = 'page',
     blogHandle = 'blog'
-  }: FetchContentSanityParams): Promise<NacelleContent> {
+  }: FetchContentSanityParams): Promise<NacelleContent | NacelleContent[]> {
     const queryTermsEq: EntriesQuery = {
       _type: type
     }
     const queryTermsIn: EntriesQueryIn = {}
+    const singleHandle = Boolean(handle) && !handles
+    const multipleHandles = !handle && Boolean(handles)
 
     if (handles) {
       queryTermsIn['handle.current'] = handles
@@ -85,7 +92,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       (acc: string, key: string) => {
         const value = queryTermsEq[key]
         const filter = `${key} == "${value}"`
-        return acc.length ? `${acc} && ${filter}` : `${filter}`
+        return acc.length ? `${acc} && ${filter}` : filter
       },
       ''
     )
@@ -93,7 +100,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       (acc: string, key: string) => {
         const value = queryTermsIn[key].map(v => `'${v}'`)
         const filter = `${key} in [${value}]`
-        return acc.length ? `${acc} && ${filter}` : `${filter}`
+        return acc.length ? `${acc} && ${filter}` : filter
       },
       groqFilterEq
     )
@@ -114,12 +121,12 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       ...,
       ${resolveMedia}}
     `
-    // const resolveSections = `"sections": sections`
 
     // Construct full groq
     const query = `*[${groqFilter}]{..., ${resolveSections}, ${resolveMedia}}`
 
     const result = await this.sanityClient.fetch(query)
+
     if (result && result.length > 0) {
       const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
 
@@ -131,14 +138,17 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
         resolvedEntryPromises
       )
 
-      return handle
-        ? this.entryMapper(resolvedEntries[0])
-        : resolvedEntries.map(this.entryMapper)
+      if (singleHandle) {
+        return this.entryMapper(resolvedEntries[0])
+      } else if (multipleHandles) {
+        return resolvedEntries.map(entry => this.entryMapper(entry))
+      }
     }
 
-    const errorContent = handle
+    const errorContent = singleHandle
       ? `type ${type}, handle ${handle}`
       : `type ${type}, handles ${handles}`
+
     throw new Error(
       `Unable to find Sanity preview content with ${errorContent}`
     )
@@ -174,6 +184,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     await Promise.all(resolvedPromises)
     return newObj
   }
+
   async lookupReference(
     reference: Reference,
     currentDepth: number = 0
@@ -190,6 +201,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       )
     }
   }
+
   async fetchEntryById(id: string): Promise<Entry> {
     const query = `*[_id == "${id}"]`
     const result = await this.sanityClient.fetch(query)
@@ -236,7 +248,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     })
   }
 
-  async articles({
+  articles({
     handles,
     blogHandle,
     locale
