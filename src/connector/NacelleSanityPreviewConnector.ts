@@ -50,6 +50,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     this.mediaProjection = params.mediaProjection || MediaProjection
     this.sectionsProjection =
       params.sectionsProjection || sectionsProjection(this.mediaProjection)
+
     const useCdn =
       typeof this.sanityConfig.useCdn === 'boolean'
         ? this.sanityConfig.useCdn
@@ -110,14 +111,7 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
       groqFilterEq
     )
 
-    // Construct full groq
-    const query = `*[${groqFilter}]{
-      ...,
-      ${this.sectionsProjection},
-      ${this.mediaProjection}}
-    `
-
-    const result = await this.sanityClient.fetch(query)
+    const result = await this.fetchFromSanity(groqFilter)
 
     if (result && result.length > 0) {
       const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
@@ -194,24 +188,24 @@ export default class NacelleSanityPreviewConnector extends NacelleStaticConnecto
     }
   }
 
-  async fetchEntryById(id: string): Promise<Entry> {
-    const query = `*[_id == "${id}"]{
+  async fetchFromSanity(groqFilter?: string): Promise<any> {
+    const query = `*[${groqFilter || ''}]{
       ...,
       ${this.sectionsProjection},
       ${this.mediaProjection}}
     `
     const result = await this.sanityClient.fetch(query)
 
+    return result
+  }
+
+  async fetchEntryById(id: string): Promise<Entry> {
+    const result = await this.fetchFromSanity(`_id == "${id}"`)
     return result && result[0]
   }
 
   async allContent(): Promise<NacelleContent[]> {
-    const query = `*[]{
-      ...,
-      ${this.sectionsProjection},
-      ${this.mediaProjection}}
-    `
-    const result = await this.sanityClient.fetch(query)
+    const result = await this.fetchFromSanity()
     if (result && result.length > 0) {
       const dedupedEntries: Array<Entry> = this.removeDraftCounterparts(result)
 
