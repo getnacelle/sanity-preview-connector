@@ -2,9 +2,9 @@
 
 This package is a connector for extending the [`@nacelle/client-js-sdk`](https://www.npmjs.com/package/@nacelle/client-js-sdk) in order to allow live previewing content updates from Sanity.
 
-The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle.com/api-reference/client-js-sdk.html#data-module) for fetching Nacelle data. By default the SDK is either fetching data from Nacelle's GraphQL or from static JSON files generated during the Nuxt build process.
+The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle.com/api-reference/client-js-sdk.html#data-module) for fetching Nacelle data. By default the SDK is either fetching data from Nacelle's GraphQL or from static JSON files generated during the Nacelle Nuxt Starter's build process.
 
-With this package we can update the `data` module so that by default it will fetch data directly from [Sanity's API](https://www.sanity.io/docs/api-cdn) using the [Sanity Javascript client](https://www.sanity.io/docs/js-client). That way you can view edits and changes on Sanity without needing to re-index those updates with Nacelle.
+With this package we can update the `data` module so that by default it will fetch data directly from [Sanity's API](https://www.sanity.io/docs/api-cdn) using the [Sanity JavaScript client](https://www.sanity.io/docs/js-client). That way you can view edits and changes on Sanity without needing to re-index those updates with Nacelle.
 
 ## Usage
 
@@ -18,9 +18,9 @@ const client = new NacelleClient(clientOptions)
 // Initialize the Sanity Preview Connector
 const sanityConnector = new NacelleSanityPreviewConnector({
   sanityConfig: {
-    token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
-    dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
-    projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
+    projectId: process.env.SANITY_PROJECT_ID,
+    dataset: process.env.SANITY_DATASET,
+    token: process.env.SANITY_TOKEN
   }
 })
 
@@ -46,28 +46,41 @@ Setting up your [Nacelle Starter Project](https://docs.getnacelle.com/nuxt/intro
 Create a file `sanity-previews.js` in your Nuxt's `/plugins` directory and paste the following code.
 
 ```js
+// ~/plugins/sanity-preview.js
 import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
 
 export default ({ app }) => {
-  if (process.env.NACELLE_PREVIEW_MODE === 'true') {
+  const {
+    NACELLE_PREVIEW_MODE,
+    SANITY_PROJECT_ID,
+    SANITY_DATASET,
+    SANITY_TOKEN
+  } = process.env
+
+  if (NACELLE_PREVIEW_MODE === 'true') {
     // Checks .env file for proper config variables
-    if (!process.env.NACELLE_CMS_PREVIEW_TOKEN) {
+    if (!SANITY_PROJECT_ID) {
       throw new Error(
-        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_TOKEN in your .env file"
+        "Couldn't get data from your CMS. Make sure to include SANITY_PROJECT_ID in your .env file"
       )
     }
-    if (!process.env.NACELLE_CMS_PREVIEW_SPACE_ID) {
+    if (!SANITY_DATASET) {
       throw new Error(
-        "Couldn't get data from your CMS. Make sure to include NACELLE_CMS_PREVIEW_SPACE_ID in your .env file"
+        "Couldn't get data from your CMS. Make sure to include SANITY_DATASET in your .env file"
+      )
+    }
+    if (!SANITY_TOKEN) {
+      throw new Error(
+        "Couldn't get data from your CMS. Make sure to include SANITY_TOKEN in your .env file"
       )
     }
 
     // Initialize the Sanity Preview Connector
     const sanityConnector = new NacelleSanityPreviewConnector({
       sanityConfig: {
-        token: process.env.NACELLE_CMS_PREVIEW_TOKEN,
-        dataset: process.env.NACELLE_CMS_PREVIEW_DATASET,
-        projectId: process.env.NACELLE_CMS_PREVIEW_SPACE_ID
+        projectId: SANITY_PROJECT_ID,
+        dataset: SANITY_DATASET,
+        token: SANITY_TOKEN
       }
     })
 
@@ -85,8 +98,9 @@ Update your `nuxt.config.js` file to include the new plugin file you created.
 
 ```js
 plugins: [
-    '~/plugins/sanity-preview'
-  ],
+  // ...other plugins,
+  '~/plugins/sanity-preview'
+],
 ```
 
 And update the `env` object in the config.
@@ -97,9 +111,9 @@ env: {
   nacelleToken: process.env.NACELLE_GRAPHQL_TOKEN,
   buildMode: process.env.BUILD_MODE,
   NACELLE_PREVIEW_MODE: process.env.NACELLE_PREVIEW_MODE,
-  NACELLE_CMS_PREVIEW_TOKEN: process.env.NACELLE_CMS_PREVIEW_TOKEN,
-  NACELLE_CMS_PREVIEW_SPACE_ID: process.env.NACELLE_CMS_PREVIEW_SPACE_ID,
-  NACELLE_CMS_PREVIEW_DATASET: process.env.NACELLE_CMS_PREVIEW_DATASET
+  SANITY_TOKEN: process.env.SANITY_TOKEN,
+  SANITY_PROJECT_ID: process.env.SANITY_PROJECT_ID,
+  SANITY_DATASET: process.env.SANITY_DATASET
 },
 ```
 
@@ -109,9 +123,13 @@ Update your Nuxt app's `.env` file to include variables for initializing the San
 
 ```bash
 NACELLE_PREVIEW_MODE=true
-NACELLE_CMS_PREVIEW_TOKEN="SANITY_TOKEN"
-NACELLE_CMS_PREVIEW_SPACE_ID="SANITY_SPACE_ID"
-NACELLE_CMS_PREVIEW_DATASET="SANITY_DATASET"
+SANITY_TOKEN=your-sanity-token
+SANITY_PROJECT_ID=your-sanity-project-id
+SANITY_DATASET=your-sanity-dataset
 ```
 
 You're all set! Running `npm run dev` your Nacelle Nuxt app will now fetch data directly from Sanity. Try updating a piece of content and refreshing the page without publishing.
+
+## Security
+
+`@nacelle/sanity-preview-connector` requires that you provide a Sanity token, and that token can be exposed in client-side JavaScript. We recommend that you take precautions to limit access to a site which exposes this token in its client code. Leading JAMstack hosting providers provide mechanisms for restricting access; we recommend that you consult their documentation (e.g. [Vercel](https://vercel.com/blog/protecting-deployments), [Netlify](https://docs.netlify.com/visitor-access/password-protection/)). By using `@nacelle/sanity-preview-connector`, you assume responsibility for taking precautions to limit access to sensitive tokens used by this package.
