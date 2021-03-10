@@ -13,7 +13,7 @@ export default function resolveMedia(featuredMedia: FeaturedMedia | undefined) {
     type: media.mimeType,
     src: media.url,
     thumbnailSrc: media.url,
-    altText: featuredMedia.altText
+    altText: featuredMedia.altText || ''
   })
 
   const mergedMedia = { ...featuredMedia, ...mappedMedia }
