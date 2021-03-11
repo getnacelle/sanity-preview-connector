@@ -216,7 +216,6 @@ export default {
     _type: 'slug',
     current: 'fluctuations-in-energy-readings'
   },
-  altText: 'Some visually-descriptive text',
   publishedDate: '2019-08-08T07:00:00.000Z',
   title: 'Fluctuations in energy readings'
 }
