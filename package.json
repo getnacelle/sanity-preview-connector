@@ -1,6 +1,6 @@
 {
   "name": "@nacelle/sanity-preview-connector",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Preview unpublished Sanity content with the Nacelle Client JS SDK",
   "license": "ISC",
   "author": "Nacelle Inc. (getnacelle.com)",
