@@ -1,4 +1,4 @@
-import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
+import { createSanityPreviewConnector } from '@nacelle/sanity-preview-connector'
 import NacelleClient from '@nacelle/client-js-sdk'
 
 // add $nacelle to window so we can use it in main.js
@@ -34,7 +34,7 @@ if (import.meta.env.VITE_NACELLE_PREVIEW_MODE) {
   }
 
   // Initialize the Sanity Preview Connector
-  const sanityConnector = new NacelleSanityPreviewConnector({
+  const sanityConnector = createSanityPreviewConnector($nacelle, {
     sanityConfig: {
       dataset: import.meta.env.VITE_SANITY_DATASET,
       projectId: import.meta.env.VITE_SANITY_PROJECT_ID,

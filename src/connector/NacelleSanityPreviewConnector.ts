@@ -1,6 +1,6 @@
-import {
-  NacelleStaticConnector,
-  NacelleStaticConnectorParams,
+import NacelleClient, {
+  NacelleGraphQLConnector,
+  NacelleGraphQLConnectorParams,
   FetchContentParams,
   FetchPageParams,
   FetchPagesParams,
@@ -15,7 +15,16 @@ import { mapSanityEntry } from '../utils'
 import { MediaProjection, sectionsProjection } from '../groq'
 
 export interface NacelleSanityPreviewConnectorParams
-  extends NacelleStaticConnectorParams {
+  extends NacelleGraphQLConnectorParams {
+  sanityConfig: ClientConfig
+  client?: SanityClient | any
+  include?: number
+  entryMapper?: (entry: Entry) => NacelleContent
+  mediaProjection?: string
+  sectionsProjection?: string
+}
+
+export interface CreateConnectorOptions {
   sanityConfig: ClientConfig
   client?: SanityClient | any
   include?: number
@@ -31,7 +40,20 @@ export interface FetchContentSanityParams
   maxDepth?: number
 }
 
-export default class NacelleSanityPreviewConnector extends NacelleStaticConnector {
+export function createSanityPreviewConnector(
+  client: NacelleClient,
+  options: CreateConnectorOptions
+): NacelleSanityPreviewConnector {
+  const params = {
+    ...options,
+    endpoint: client.nacelleEndpoint,
+    spaceId: client.id,
+    token: client.token
+  }
+  return new NacelleSanityPreviewConnector(params)
+}
+
+export default class NacelleSanityPreviewConnector extends NacelleGraphQLConnector {
   sanityClient: SanityClient
   sanityConfig: ClientConfig
   maxDepth: number
