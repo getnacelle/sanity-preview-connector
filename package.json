@@ -1,6 +1,6 @@
 {
   "name": "@nacelle/sanity-preview-connector",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Preview unpublished Sanity content with the Nacelle Client JS SDK",
   "license": "ISC",
   "author": "Nacelle Inc. (getnacelle.com)",
@@ -15,7 +15,6 @@
     "analyze": "size-limit --why",
     "release": "npm run build && standard-version && git push --follow-tags && npm publish"
   },
-  "peerDependencies": {},
   "main": "dist/index.js",
   "module": "dist/sanity-preview-connector.esm.js",
   "typings": "dist/index.d.ts",
@@ -54,7 +53,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@nacelle/client-js-sdk": "^3.1.1",
+    "@nacelle/client-js-sdk": "^3.4.1",
     "@sanity/client": "^2.1.4"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@
 
 This package is a connector for extending the [`@nacelle/client-js-sdk`](https://www.npmjs.com/package/@nacelle/client-js-sdk) in order to allow live previewing content updates from Sanity.
 
-The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle.com/api-reference/client-js-sdk.html#data-module) for fetching Nacelle data. By default the SDK is either fetching data from Nacelle's GraphQL or from static JSON files generated during the Nacelle Nuxt Starter's build process.
+The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle.com/api-reference/client-js-sdk.html#data-module) for fetching Nacelle data. By default the SDK is fetching data from Nacelle's GraphQL.
 
 With this package we can update the `data` module so that by default it will fetch data directly from [Sanity's API](https://www.sanity.io/docs/api-cdn) using the [Sanity JavaScript client](https://www.sanity.io/docs/js-client). That way you can view edits and changes on Sanity without needing to re-index those updates with Nacelle.
 
@@ -10,13 +10,13 @@ With this package we can update the `data` module so that by default it will fet
 
 ```js
 import NacelleClient from '@nacelle/client-js-sdk'
-import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
+import { createSanityPreviewConnector } from '@nacelle/sanity-preview-connector'
 
 // Initialize the Nacelle Client
 const client = new NacelleClient(clientOptions)
 
 // Initialize the Sanity Preview Connector
-const sanityConnector = new NacelleSanityPreviewConnector({
+const sanityConnector = createSanityPreviewConnector(client, {
   sanityConfig: {
     projectId: process.env.SANITY_PROJECT_ID,
     dataset: process.env.SANITY_DATASET,
@@ -26,7 +26,7 @@ const sanityConnector = new NacelleSanityPreviewConnector({
 
 // Update the data module with the new connector
 client.data.update({
-  connector: previewConnector
+  connector: sanityConnector
 })
 
 // Homepage data will be fetched directly from preview API
@@ -47,7 +47,7 @@ Create a file `sanity-previews.js` in your Nuxt's `/plugins` directory and paste
 
 ```js
 // ~/plugins/sanity-preview.js
-import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
+import { createSanityPreviewConnector } from '@nacelle/sanity-preview-connector'
 
 export default ({ app }) => {
   const {
@@ -76,7 +76,7 @@ export default ({ app }) => {
     }
 
     // Initialize the Sanity Preview Connector
-    const sanityConnector = new NacelleSanityPreviewConnector({
+    const sanityConnector = createSanityPreviewConnector(app.$nacelle.client, {
       sanityConfig: {
         projectId: SANITY_PROJECT_ID,
         dataset: SANITY_DATASET,

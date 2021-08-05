@@ -4,7 +4,7 @@
 //
 //    plugins: ['sanity-preview']
 //
-import NacelleSanityPreviewConnector from '@nacelle/sanity-preview-connector'
+import { createSanityPreviewConnector } from '@nacelle/sanity-preview-connector'
 
 export default ({ app }) => {
   const {
@@ -33,7 +33,7 @@ export default ({ app }) => {
     }
 
     // Initialize the Sanity Preview Connector
-    const sanityConnector = new NacelleSanityPreviewConnector({
+    const sanityConnector = createSanityPreviewConnector(app.$nacelle.client, {
       sanityConfig: {
         projectId: SANITY_PROJECT_ID,
         dataset: SANITY_DATASET,

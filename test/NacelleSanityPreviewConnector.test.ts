@@ -25,11 +25,13 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId,
         token: credentials.token
-      }
+      },
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     expect(connector.locale).toBe('en-us')
-    expect(connector.basePath).toBe('/')
     expect(connector.sanityConfig.dataset).toBe(process.env.SANITY_DATASET)
     expect(connector.sanityConfig.projectId).toBe(process.env.SANITY_PROJECT_ID)
     expect(connector.sanityConfig.token).toBe(process.env.SANITY_TOKEN)
@@ -42,7 +44,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.content({
@@ -64,7 +69,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     const item = await connector.content({
@@ -92,7 +100,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.allContent()
@@ -107,7 +118,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.page({
@@ -128,7 +142,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.article({
@@ -150,7 +167,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.blog({
@@ -171,7 +191,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.blogPage({
@@ -195,7 +218,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     await connector.pages({
@@ -219,7 +245,10 @@ describe('NacelleSanityPreviewConnector', () => {
         dataset: credentials.dataset,
         projectId: credentials.projectId
       },
-      client: mockClient
+      client: mockClient,
+      endpoint: 'mockHailFrequency.com',
+      spaceId: 'mock-space',
+      token: '1234'
     })
 
     const results = await connector.pages({
