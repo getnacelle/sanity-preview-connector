@@ -1,13 +1,5 @@
-import NacelleSanityPreviewConnector, {
-  createSanityPreviewConnector,
-  CreateConnectorOptions,
-  NacelleSanityPreviewConnectorParams
-} from './connector/NacelleSanityPreviewConnector'
+import NacelleSanityPreviewConnector from './connector/NacelleSanityPreviewConnector'
+
+export * from './connector/NacelleSanityPreviewConnector'
 
 export default NacelleSanityPreviewConnector
-
-export {
-  createSanityPreviewConnector,
-  CreateConnectorOptions,
-  NacelleSanityPreviewConnectorParams
-}
