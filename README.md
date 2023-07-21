@@ -6,6 +6,10 @@ The Client JS SDK uses connectors in the [`data` module](https://docs.getnacelle
 
 With this package we can update the `data` module so that by default it will fetch data directly from [Sanity's API](https://www.sanity.io/docs/api-cdn) using the [Sanity JavaScript client](https://www.sanity.io/docs/js-client). That way you can view edits and changes on Sanity without needing to re-index those updates with Nacelle.
 
+## NOTICE
+
+This package is deprecated. For up-to-date information about sourcing draft/preview content in frontend projects powered by Nacelle, please see [`docs.nacelle.com`](https://docs.nacelle.com/docs/preview-data).
+
 ## Usage
 
 ```js
